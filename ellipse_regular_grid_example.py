@@ -17,7 +17,10 @@ from scipy.spatial import Delaunay, delaunay_plot_2d
 fig = plt.figure()
 ax = fig.add_subplot(111, aspect='equal')
 np.random.seed(3)
-pts = np.random.rand(100, 2)
+x, y = np.mgrid[0:1:10j, 0:1:10j]
+x.shape = (100, 1)
+y.shape = (100, 1)
+pts = np.hstack([x, y]) + np.random.normal(scale=0.02, size=(100, 2))
 vor = Voronoi(pts)
 voronoi_plot_2d(vor, ax=ax)
 tri = Delaunay(pts)
@@ -28,7 +31,7 @@ for triang in tri.simplices:
     C = triang[2]
     vertices = np.array([pts[A], pts[B], pts[C]])
     centroid, semi_minor, semi_major, ang = steiner_inellipse(vertices)
-    ellipse = Ellipse(centroid, 1.8*semi_major, 1.8*semi_minor, angle=ang,
+    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang,
                       facecolor="red")
     ax.add_artist(ellipse)
 
