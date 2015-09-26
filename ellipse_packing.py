@@ -14,14 +14,26 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 from scipy.spatial import Delaunay, delaunay_plot_2d
 
 def steiner_inellipse(vertices):
-    """Compute the Steiner inellipse of a triangle
+    r"""Compute the Steiner inellipse of a triangle
     
     The Steiner inellipse is the unique ellipse inscribed in the
-    triangle and tangent to the sides at their midpoints [1]_.
-    The angle is found using the formula for the foci presented
-    in [2]_.
+    triangle and tangent to the sides at their midpoints. The lengths
+    of the semi-major and semi-minor axes for a triangle with sides
+    :math:`A`,  :math:`B`,  :math:`C` are [1]_
     
+    .. math::
+        \frac{1}{6}\sqrt{A^2 + B^2 + C^2 \pm 2Z}\ ,
+        
+    where :math:`Z = \sqrt{A^4 + B^4 + C^4 - (AB)^2 - (BC)^2 - (CA)^2}`.
     
+    The angle is found using [2]_
+    
+    .. math::
+        g \pm \sqrt{g^2 - \frac{1}{3}(z_1 z_2 + z_2 z_3 + z_1 z_3)}\ ,
+        
+    where :math:`g = \dfrac{1}{3}(z_1 + z_2 + z_3)` is the centroid,
+    and :math:`z_i` are the vertices represented as complex numbers.
+
     
     Parameters
     ----------
@@ -58,7 +70,6 @@ def steiner_inellipse(vertices):
     ...                [1, 0]])
 
     >>> centroid, semi_minor, semi_major, ang = steiner_inellipse(pts)
-
     >>> print(np.isclose(centroid, [1/3, 1/3]))
     [ True  True]
 
@@ -77,7 +88,6 @@ def steiner_inellipse(vertices):
     ...                [7, 5],
     ...                [3, 1]])
 
-
     >>> centroid, semi_minor, semi_major, ang = steiner_inellipse(pts)
     >>> print(np.isclose(centroid, [11/3, 13/3]))
     [ True  True]
@@ -90,9 +100,7 @@ def steiner_inellipse(vertices):
 
     >>> print(np.isclose(ang, -45))
     True
-        
-    
-    
+
     """
     # centroid
     centroid = np.mean(vertices, axis=0)
@@ -117,25 +125,118 @@ def steiner_inellipse(vertices):
     return centroid, semi_minor, semi_major, ang
 
 
+def poly_ellipse(vertices):
+    """Return an ellipse given a polygon using SVD
 
+    Parameters
+    ----------
+    vertices : ndarray (3, 2)
+        Vertices of the triangle.
+
+    Returns
+    -------
+    centroid : ndarray (2,)
+        Centroid of the triangle.
+    semi_minor : float (positive)
+        Semi-minor axis of the ellipse.
+    semi_major : float (positive)
+        Semi-major axis of the ellipse.
+    ang : float
+        Angle (in degrees) with respect to the horizontal.
+
+    Examples
+    --------
+
+    >>> pts = np.array([[2, 0],
+    ...                [0, 1],
+    ...                [-2, 0],
+    ...                [0, -1]])
+    
+    >>> centroid, semi_minor, semi_major, ang = poly_ellipse(pts)
+
+    >>> print(np.isclose(centroid, [0, 0]))
+    [ True  True]
+
+    >>> print(np.isclose(semi_minor, np.sqrt(2/3)))
+    True
+
+    >>> print(np.isclose(semi_major, np.sqrt(8/3)))
+    True
+
+    >>> print(np.isclose(ang, 0))
+    True
+
+
+    """
+    def eigsorted(cov):
+        vals, vecs = np.linalg.eigh(cov)
+        order = vals.argsort()[::-1]
+        return vals[order], vecs[:,order]
+
+    cov = np.cov(vertices.T)
+    vals, vecs = eigsorted(cov)
+    ang = np.degrees(np.arctan2(*vecs[:,0][::-1]))
+    semi_major, semi_minor = sqrt(vals)        
+    centroid = np.mean(vertices, axis=0)
+    
+    return centroid, semi_minor, semi_major, ang
 
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
     
+    # Triangle inellipse
     pts = np.array([[1, 7],
                     [7, 5],
-                    [3, 1]])
-                 
-    
+                    [3, 1]])              
     fig = plt.figure()
     ax = fig.add_subplot(111, aspect='equal')
     centroid, semi_minor, semi_major, ang = steiner_inellipse(pts)
-    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang)
+    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang,
+                      alpha=0.2)
     poly = Polygon(pts, fill=False)
     ax.add_artist(ellipse)
     ax.add_artist(poly)
     plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
     plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+
+    # Rhombic quadrilateral
+    theta = np.array([0, np.pi/2, np.pi, 3*np.pi/2])
+    pts = np.empty((4, 2))
+    pts[:, 0] = 2*np.cos(theta)
+    pts[:, 1] = np.sin(theta)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, aspect='equal')
+    centroid, semi_minor, semi_major, ang = poly_ellipse(pts)
+    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang,
+                      alpha=0.2)
+    poly = Polygon(pts, fill=False)
+    ax.add_artist(ellipse)
+    ax.add_artist(poly)
+    plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
+    plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+    
+    # Random polygon    
+    nsides = np.random.random_integers(4, 8)
+    theta = np.linspace(0, 2*np.pi, nsides, endpoint=False) \
+        + np.pi/20*np.random.normal(size=nsides)
+    pts = np.empty((nsides, 2))
+    pts[:, 0] = 2*np.cos(theta) + 0.2*np.random.normal(size=nsides)
+    pts[:, 1] = np.sin(theta) + 0.1*np.random.normal(size=nsides)
+    x = pts[:,0]
+    y = pts[:,1]
+    
+    fig = plt.figure()  
+    ax = fig.add_subplot(111, aspect='equal')
+    
+    centroid, semi_minor, semi_major, ang = poly_ellipse(pts)
+    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang,
+              alpha=0.2, lw=0)
+    poly = Polygon(pts, fill=False)
+    ax.add_artist(ellipse)
+    ax.add_artist(poly)
+    plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
+    plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+    
     plt.show()
