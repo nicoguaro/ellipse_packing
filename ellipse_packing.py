@@ -10,8 +10,8 @@ from numpy import sqrt, angle
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Polygon
-from scipy.spatial import Voronoi, voronoi_plot_2d
-from scipy.spatial import Delaunay, delaunay_plot_2d
+from scipy.spatial import Voronoi, Delaunay
+#from scipy.spatial import voronoi_plot_2d, delaunay_plot_2d
 
 def steiner_inellipse(vertices):
     r"""Compute the Steiner inellipse of a triangle
@@ -180,6 +180,48 @@ def poly_ellipse(vertices):
     centroid = np.mean(vertices, axis=0)
     
     return centroid, semi_minor, semi_major, ang
+
+
+def voronoi_ellipses(pts, min_aspect_ratio=0.2):
+    """Ellipses from the Voronoi tesselation of a pointset
+    
+    
+    """
+    vor = Voronoi(pts)
+    xmin, ymin = np.min(pts, axis=0)
+    xmax, ymax = np.max(pts, axis=0)
+    ellipses = []
+    for poly in vor.regions:
+        vertices = np.array(vor.vertices[poly])
+        if -1 in poly or len(poly)==0:
+            pass
+        elif (vertices[:,0]<xmin).any() or (vertices[:,1]<ymin).any() or \
+             (vertices[:,0]>xmax).any() or (vertices[:,1]>ymax).any():
+            pass
+        else:
+            vertices.shape = (len(poly), 2)
+            centroid, semi_minor, semi_major, ang = poly_ellipse(vertices)
+            if semi_minor/semi_major > min_aspect_ratio:
+                ellipses.append([centroid, semi_minor, semi_major, ang])
+
+    return ellipses
+    
+    
+def delaunay_ellipses(pts, min_aspect_ratio=0.2):
+    """
+    """
+    tri = Delaunay(pts)
+    ellipses = []
+    for triang in tri.simplices:
+        A = triang[0]
+        B = triang[1]
+        C = triang[2]
+        vertices = np.array([pts[A], pts[B], pts[C]])
+        centroid, semi_minor, semi_major, ang = steiner_inellipse(vertices)
+        if semi_minor/semi_major > min_aspect_ratio:
+            ellipses.append([centroid, semi_minor, semi_major, ang])
+        
+    return ellipses
 
 
 if __name__ == "__main__":
