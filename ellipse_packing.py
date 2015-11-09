@@ -250,6 +250,18 @@ def split_average(x, y, w=(1, 1, 1)):
      .. [1] Catmull, Edwin. A subdivision algorithm for computer
          display of curved surfaces. No. UTEC-CSC-74-133. UTAH
          UNIV SALT LAKE CITY SCHOOL OF COMPUTING, 1974.
+
+    Examples
+    --------
+    
+    >>> x = [1, 0, -1, 0]
+    >>> y = [0, 1, 0, -1]
+    >>> xnew, ynew = split_average(x, y)
+    >>> print(np.round(xnew, 4))
+    [ 0.6667  0.5     0.     -0.5    -0.6667 -0.5     0.      0.5   ]
+    >>> print(np.round(ynew, 4))
+    [ 0.      0.5     0.6667  0.5     0.     -0.5    -0.6667 -0.5   ]
+
     """
     n = len(x)
     xnew = np.zeros((2*n))
@@ -265,7 +277,7 @@ def split_average(x, y, w=(1, 1, 1)):
     return xnew, ynew
 
 
-def multi_subdivide(x, y, times, weights):
+def multi_subdivide(x, y, times, weights=(1,1,1)):
     """Apply multiple iteration of the subdivision algorithm
     
     Parameters

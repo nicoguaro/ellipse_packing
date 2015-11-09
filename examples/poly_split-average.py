@@ -14,12 +14,12 @@ from ellipse_packing import multi_subdivide
 
 
 #%% Generation of the new polygon
-nsides = 6
+nsides = 4
 theta = np.linspace(0, 2*np.pi, nsides, endpoint=False) + \
-        0.5*np.random.rand(nsides)
+        0*0.5*np.random.rand(nsides)
 x = np.cos(theta)
 y = np.sin(theta)
-weights = [1, 6, 1]
+weights = [1, 1, 1]
 xnew, ynew = multi_subdivide(x, y, 10, weights)
 
 

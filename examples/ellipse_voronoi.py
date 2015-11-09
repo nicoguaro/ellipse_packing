@@ -25,7 +25,7 @@ ymin = 0
 ymax = np.sqrt(2)/2
 x, y = np.mgrid[xmin:xmax:nx*1j,
                 ymin:ymax:ny*1j]
-x[:, 1::2] = x[:, 1::2] + 1/nx
+x[:, 1::2] = x[:, 1::2] + (xmax - xmin)/(2*nx)
 x.shape = (nx*ny, 1)
 y.shape = (nx*ny, 1)
 pts = np.hstack([x, y]) + 0.005*np.random.normal(size=(nx*ny, 2))
