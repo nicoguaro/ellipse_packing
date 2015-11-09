@@ -7,7 +7,7 @@ import os
 
 
 doc = FC.newDocument("ellipses")
-folder = os.path.dirname(__file__)
+folder = os.path.dirname(__file__) + ".\.."
 fname = folder + "/vor_ellipses.txt"
 data = np.loadtxt(fname)
 shapes = []

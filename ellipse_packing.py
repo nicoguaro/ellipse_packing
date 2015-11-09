@@ -11,7 +11,6 @@ from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Polygon
 from scipy.spatial import Voronoi, Delaunay
-#from scipy.spatial import voronoi_plot_2d, delaunay_plot_2d
 
 def steiner_inellipse(vertices):
     r"""Compute the Steiner inellipse of a triangle
@@ -205,8 +204,8 @@ def voronoi_ellipses(pts, min_aspect_ratio=0.2):
                 ellipses.append([centroid, semi_minor, semi_major, ang])
 
     return ellipses
-    
-    
+
+
 def delaunay_ellipses(pts, min_aspect_ratio=0.2):
     """
     """
@@ -220,8 +219,80 @@ def delaunay_ellipses(pts, min_aspect_ratio=0.2):
         centroid, semi_minor, semi_major, ang = steiner_inellipse(vertices)
         if semi_minor/semi_major > min_aspect_ratio:
             ellipses.append([centroid, semi_minor, semi_major, ang])
-        
+
     return ellipses
+
+
+def split_average(x, y, w=(1, 1, 1)):
+    """Compute an iteration of the subdivision algorithm [1]_
+    
+    Parameters
+    ----------
+    x : ndarray (n)
+        Unidimensional array with the x coordinates for the polygon.
+    y : ndarray (n)
+        Unidimensional array with the y coordinates for the polygon.
+    w : tuple (3, optional)
+        Weights for the points. They should have the same sign for
+        *normal* uses. And the sum should not be zero.
+
+    Returns
+    -------
+    xnew : ndarray (2*n)
+        Unidimensional array with the x coordinates for the subdivided
+        polygon.
+    ynew : ndarray (2*n)
+        Unidimensional array with the y coordinates for the subdivided
+        polygon.
+
+    References
+    ----------
+     .. [1] Catmull, Edwin. A subdivision algorithm for computer
+         display of curved surfaces. No. UTEC-CSC-74-133. UTAH
+         UNIV SALT LAKE CITY SCHOOL OF COMPUTING, 1974.
+    """
+    n = len(x)
+    xnew = np.zeros((2*n))
+    ynew = np.zeros((2*n))
+    xnew[::2] = x
+    ynew[::2] = y
+    xnew[1::2] = [0.5*(x[k] + x[(k+1)%n]) for k in range(n)]
+    ynew[1::2] = [0.5*(y[k] + y[(k+1)%n]) for k in range(n)]
+    xnew[::2] = [(w[0]*xnew[2*k-1] + w[1]*xnew[2*k] + w[2]*xnew[(2*k+1)%(2*n)])
+                    /(w[0] + w[1] + w[2]) for k in range(n)]
+    ynew[::2] = [(w[0]*ynew[2*k-1] + w[1]*ynew[2*k] + w[2]*ynew[(2*k+1)%(2*n)])
+                    /(w[0] + w[1] + w[2]) for k in range(n)]
+    return xnew, ynew
+
+
+def multi_subdivide(x, y, times, weights):
+    """Apply multiple iteration of the subdivision algorithm
+    
+    Parameters
+    ----------
+    x : ndarray (n)
+        Unidimensional array with the x coordinates for the polygon.
+    y : ndarray (n)
+        Unidimensional array with the y coordinates for the polygon.
+    times : int
+        Number of iterations for the subdivision algorithm.
+    weights : tuple (3, optional)
+        Weights for the points. They should have the same sign for
+        *normal* uses. And the sum should not be zero.
+
+    Returns
+    -------
+    x : ndarray (2*n)
+        Unidimensional array with the x coordinates for the subdivided
+        polygon.
+    y : ndarray (2*n)
+        Unidimensional array with the y coordinates for the subdivided
+        polygon.
+    """
+    for k in range(times):
+        x, y = split_average(x, y, w=weights)
+        
+    return x, y
 
 
 if __name__ == "__main__":
@@ -280,5 +351,24 @@ if __name__ == "__main__":
     ax.add_artist(poly)
     plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
     plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+
+
+    # Subdivision algorithm
+    nsides = 6
+    theta = np.linspace(0, 2*np.pi, nsides, endpoint=False) + \
+            0.5*np.random.rand(nsides)
+    x = np.cos(theta)
+    y = np.sin(theta)
+    weights = [1, 6, 1]
+    xnew, ynew = multi_subdivide(x, y, 10, weights)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, aspect='equal')
+    poly = Polygon(np.column_stack([x,y]), fill=False)
+    poly2 = Polygon(np.column_stack([xnew, ynew]), alpha=0.2, lw=0)
+    ax.add_artist(poly)
+    ax.add_artist(poly2)
+    plt.xlim(1.2*np.min(x), 1.2*np.max(x))
+    plt.ylim(1.2*np.min(y), 1.2*np.max(y))
     
     plt.show()
