@@ -7,11 +7,10 @@ Created on Fri Sep 25 16:39:34 2015
 from __future__ import division
 import os, sys
 sys.path.append(os.path.dirname(__file__ ) + "\..")
-from ellipse_packing import voronoi_smooth_poly
+from ellipse_packing import voronoi_poly
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import  Polygon
-from scipy.spatial import Voronoi
 
 
 #%% Delaunay and Voronoi
@@ -31,7 +30,7 @@ x.shape = (nx*ny, 1)
 y.shape = (nx*ny, 1)
 pts = np.hstack([x, y]) + 0.01*np.random.normal(size=(nx*ny, 2))
 scal = 0.8
-vor_polys = voronoi_smooth_poly(pts, scaling=0.95)
+vor_polys = voronoi_poly(pts, scaling=0.95)
 for poly in vor_polys:
     ax.add_artist(Polygon(poly, facecolor="green", alpha=0.4))
 

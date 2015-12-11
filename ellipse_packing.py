@@ -2,7 +2,7 @@
 """
 Created on Wed Sep 23 21:17:56 2015
 
-@author: nguarin
+@author: Nicolas Guarin-Zapata
 """
 from __future__ import division
 import numpy as np
@@ -307,10 +307,101 @@ def multi_subdivide(x, y, times, weights=(1,1,1)):
     return x, y
 
 
+def voronoi_poly(pts, scaling=0.9):
+    """Polygons from the Voronoi tesselation of a pointset
+
+    Parameters
+    ----------
+    pts : array like (npts, 2)
+        Set of points to compute the Voronoi tesselation.
+    scaling : float (>=0 and <=1)
+        Scale factor to the polygons forming the Voronoi tesselation.
+
+    Returns
+    -------
+    polys : list
+        List of vertices of the polygons forming the Voronoi
+        tesselation.
+
+    """
+    vor = Voronoi(pts)
+    xmin, ymin = np.min(pts, axis=0)
+    xmax, ymax = np.max(pts, axis=0)
+    polys = []
+    for poly in vor.regions:
+        vertices = np.array(vor.vertices[poly])
+        if -1 in poly or len(poly)==0:
+            pass
+        elif (vertices[:,0]<xmin).any() or (vertices[:,1]<ymin).any() or \
+             (vertices[:,0]>xmax).any() or (vertices[:,1]>ymax).any():
+            pass
+        else:
+            vertices.shape = (len(poly), 2)
+            mean = np.mean(vertices, axis=0)
+            vertices = scaling * (vertices - mean) + mean
+            polys.append(vertices)
+
+    return polys
+
+
+def voronoi_smooth_poly(pts, niter=3, weigths=[1, 6, 1], scaling=1.0):
+    """Smoothed polygons from the Voronoi tesselation of a pointset
+    
+    The smoothing is done with subdivision algorithm.
+
+    Parameters
+    ----------
+    pts : array like (npts, 2)
+        Set of points to compute the Voronoi tesselation.
+    niter : int
+        Number of subdivisions to use.
+    weights : list
+        Weights for the the corners of the smoothing process.
+    scaling : float (>=0 and <=1)
+        Scale factor to the polygons forming the Voronoi tesselation.
+
+    Returns
+    -------
+    polys : list
+        List of vertices of the smoothed polygons forming the
+        Voronoi tesselation.
+
+    """
+    vor = Voronoi(pts)
+    xmin, ymin = np.min(pts, axis=0)
+    xmax, ymax = np.max(pts, axis=0)
+    polys = []
+    weights = [1, 6, 1]
+    for poly in vor.regions:
+        vertices = np.array(vor.vertices[poly])
+        if -1 in poly or len(poly)==0:
+            pass
+        elif (vertices[:,0]<xmin).any() or (vertices[:,1]<ymin).any() or \
+             (vertices[:,0]>xmax).any() or (vertices[:,1]>ymax).any():
+            pass
+        else:
+            vertices.shape = (len(poly), 2)
+            mean = np.mean(vertices, axis=0)
+            vertices = scaling * (vertices - mean) + mean
+            x, y = multi_subdivide(vertices[:, 0], vertices[:, 1], niter,
+                                   weights)
+            polys.append(np.column_stack([x,y]))
+
+    return polys
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
     
+    from matplotlib import rcParams
+
+    rcParams['font.family'] = 'serif'
+    rcParams['font.size'] = 16
+
+    # Examples
+    # --------
+
     # Triangle inellipse
     pts = np.array([[1, 7],
                     [7, 5],
@@ -325,6 +416,7 @@ if __name__ == "__main__":
     ax.add_artist(poly)
     plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
     plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+    plt.title("Steiner inellipse")
 
     # Rhombic quadrilateral
     theta = np.array([0, np.pi/2, np.pi, 3*np.pi/2])
@@ -341,7 +433,9 @@ if __name__ == "__main__":
     ax.add_artist(poly)
     plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
     plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
-    
+    plt.title("Ellipse in a rhombic quadrilateral")
+
+
     # Random polygon    
     nsides = np.random.random_integers(4, 8)
     theta = np.linspace(0, 2*np.pi, nsides, endpoint=False) \
@@ -356,13 +450,14 @@ if __name__ == "__main__":
     ax = fig.add_subplot(111, aspect='equal')
     
     centroid, semi_minor, semi_major, ang = poly_ellipse(pts)
-    ellipse = Ellipse(centroid, 2*semi_major, 2*semi_minor, angle=ang,
+    ellipse = Ellipse(centroid, 1.8*semi_major, 1.8*semi_minor, angle=ang,
               alpha=0.2, lw=0)
     poly = Polygon(pts, fill=False)
     ax.add_artist(ellipse)
     ax.add_artist(poly)
     plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
     plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+    plt.title("Ellipse in a random polygon")
 
 
     # Subdivision algorithm
@@ -371,8 +466,8 @@ if __name__ == "__main__":
             0.5*np.random.rand(nsides)
     x = np.cos(theta)
     y = np.sin(theta)
-    weights = [1, 6, 1]
-    xnew, ynew = multi_subdivide(x, y, 10, weights)
+    weights = [1, 20, 1]
+    xnew, ynew = multi_subdivide(x, y, 4, weights)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, aspect='equal')
@@ -382,5 +477,6 @@ if __name__ == "__main__":
     ax.add_artist(poly2)
     plt.xlim(1.2*np.min(x), 1.2*np.max(x))
     plt.ylim(1.2*np.min(y), 1.2*np.max(y))
+    plt.title("Subdivision algorithm in a polygon")
     
     plt.show()
