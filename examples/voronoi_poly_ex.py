@@ -19,11 +19,11 @@ ax = fig.add_subplot(111, aspect='equal')
 np.random.seed(3)
 nx = 50
 ny = 10
-xmin = 0
-xmax = 5
-ymin = 0
-ymax = np.sqrt(2)/2
-x, y = np.mgrid[xmin:xmax:nx*1j,
+xmin = -2.5
+xmax = 2.5
+ymin = -np.sqrt(2)/4
+ymax = np.sqrt(2)/4
+x, y = 1.1*np.mgrid[xmin:xmax:nx*1j,
                 ymin:ymax:ny*1j]
 x[:, 1::2] = x[:, 1::2] + (xmax - xmin)/(2*nx)
 x.shape = (nx*ny, 1)
@@ -36,4 +36,6 @@ for poly in vor_polys:
 
 plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
 plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
+#plt.xlim(xmin, xmax)
+#plt.ylim(ymin, ymax)
 plt.show()
