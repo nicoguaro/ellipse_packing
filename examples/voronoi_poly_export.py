@@ -9,13 +9,11 @@ import os, sys
 sys.path.append(os.path.dirname(__file__ ) + "\..")
 from ellipse_packing import voronoi_poly
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import  Polygon
+#import FreeCAD as FC
+#import Part
 
 
 #%% Delaunay and Voronoi
-fig = plt.figure()
-ax = fig.add_subplot(111, aspect='equal')
 np.random.seed(3)
 nx = 50
 ny = 10
@@ -29,12 +27,11 @@ x[:, 1::2] = x[:, 1::2] + (xmax - xmin)/(2*nx)
 x.shape = (nx*ny, 1)
 y.shape = (nx*ny, 1)
 pts = np.hstack([x, y]) + 0.01*np.random.normal(size=(nx*ny, 2))
+scal = 0.8
 vor_polys = voronoi_poly(pts, scaling=0.95)
+fid = open("voronoi_poly.txt", "w")
 for poly in vor_polys:
-    ax.add_artist(Polygon(poly, facecolor="green", alpha=0.4))
-
-#plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
-#plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
-plt.xlim(xmin, xmax)
-plt.ylim(ymin, ymax)
-plt.show()
+    poly = poly.flatten()
+    text = ("%s " * (len(poly) - 1) + "%s\n")  % tuple(poly)
+    fid.write(text)
+fid.close()
