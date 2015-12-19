@@ -27,7 +27,6 @@ x[:, 1::2] = x[:, 1::2] + (xmax - xmin)/(2*nx)
 x.shape = (nx*ny, 1)
 y.shape = (nx*ny, 1)
 pts = np.hstack([x, y]) + 0.01*np.random.normal(size=(nx*ny, 2))
-scal = 0.8
 vor_polys = voronoi_poly(pts, scaling=0.95)
 fid = open("voronoi_poly.txt", "w")
 for poly in vor_polys:
