@@ -4,14 +4,13 @@ Created on Fri Sep 25 16:39:34 2015
 
 @author: nguarin
 """
-from __future__ import division
-import numpy as np
+from __future__ import absolute_import, division, print_function
 import sys
-sys.path.append(".\..")
-from ellipse_packing import delaunay_ellipses
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
-
+sys.path.append("./..")
+from ellipse_packing.ellipse_packing import delaunay_ellipses
 
 #%% Delaunay and Voronoi
 fig = plt.figure()

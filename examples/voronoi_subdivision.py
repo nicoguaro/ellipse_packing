@@ -4,14 +4,13 @@ Created on Fri Sep 25 16:39:34 2015
 
 @author: nguarin
 """
-from __future__ import division
-import os, sys
-sys.path.append(os.path.dirname(__file__ ) + "\..")
-from ellipse_packing import voronoi_smooth_poly
+from __future__ import absolute_import, division, print_function
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import  Polygon
-from scipy.spatial import Voronoi
+sys.path.append("./..")
+from ellipse_packing.ellipse_packing import voronoi_smooth_poly
 
 
 #%% Delaunay and Voronoi

@@ -4,15 +4,15 @@ Created on Thu Sep 24 19:30:25 2015
 
 @author: nguarin
 """
-from __future__ import division
+from __future__ import absolute_import, division, print_function
 import numpy as np
 import sys
-sys.path.append(".\..")
-from ellipse_packing import steiner_inellipse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from scipy.spatial import Voronoi, voronoi_plot_2d
 from scipy.spatial import Delaunay, delaunay_plot_2d
+sys.path.append(".\..")
+from ellipse_packing.ellipse_packing import steiner_inellipse
 
 
 #%% Delaunay and Voronoi

@@ -24,6 +24,6 @@ for ellipse in data:
     shapes.append(ellipse)
     area = area + np.pi*a*b*100*100
 
-print "area: %g " % (area/500/70)
-print "radius: %g +/- %g" % (np.mean(radii), np.std(radii))
+print("area: %g " % (area/500/70))
+print("radius: %g +/- %g" % (np.mean(radii), np.std(radii)))
 part = Part.makeCompound(shapes)

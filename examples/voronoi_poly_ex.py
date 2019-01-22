@@ -4,13 +4,13 @@ Created on Fri Sep 25 16:39:34 2015
 
 @author: nguarin
 """
-from __future__ import division
-import os, sys
-sys.path.append(os.path.dirname(__file__ ) + "\..")
-from ellipse_packing import voronoi_poly
+from __future__ import absolute_import, division, print_function
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import  Polygon
+sys.path.append("./..")
+from ellipse_packing.ellipse_packing import voronoi_poly
 
 
 #%% Delaunay and Voronoi
@@ -33,8 +33,11 @@ vor_polys = voronoi_poly(pts, scaling=0.95)
 for poly in vor_polys:
     ax.add_artist(Polygon(poly, facecolor="green", alpha=0.4))
 
-#plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
-#plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
-plt.xlim(xmin, xmax)
-plt.ylim(ymin, ymax)
+plt.hlines(ymin, xmin, xmax)
+plt.hlines(ymax, xmin, xmax)
+plt.vlines(xmin, ymin, ymax)
+plt.vlines(xmax, ymin, ymax)
+
+plt.xlim(np.min(pts[:,0]), np.max(pts[:,0]))
+plt.ylim(np.min(pts[:,1]), np.max(pts[:,1]))
 plt.show()

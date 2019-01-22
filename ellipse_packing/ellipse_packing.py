@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 23 21:17:56 2015
+Generate random ellipses that (partially) cover an area. It is
+intended for automatic generation of microstructures.
 
 @author: Nicolas Guarin-Zapata
 """
@@ -398,6 +399,8 @@ if __name__ == "__main__":
 
     rcParams['font.family'] = 'serif'
     rcParams['font.size'] = 16
+    plt.close("all")
+    np.random.seed(3)
 
     # Examples
     # --------
@@ -437,7 +440,7 @@ if __name__ == "__main__":
 
 
     # Random polygon    
-    nsides = np.random.random_integers(4, 8)
+    nsides = np.random.randint(4, 8 + 1)
     theta = np.linspace(0, 2*np.pi, nsides, endpoint=False) \
         + np.pi/20*np.random.normal(size=nsides)
     pts = np.empty((nsides, 2))
@@ -466,7 +469,7 @@ if __name__ == "__main__":
             0.5*np.random.rand(nsides)
     x = np.cos(theta)
     y = np.sin(theta)
-    weights = [1, 20, 1]
+    weights = [1, 5, 1]
     xnew, ynew = multi_subdivide(x, y, 4, weights)
 
     fig = plt.figure()
